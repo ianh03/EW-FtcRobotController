@@ -117,7 +117,7 @@ public class RobotHardware {
         double startingTicks = leftEncoder.getCurrentPosition();
 
         // Repeat until target/goal is met
-        while (ticksToMM(leftEncoder.getCurrentPosition() - startingTicks) < targetMM) {
+        while (Math.abs(ticksToMM(leftEncoder.getCurrentPosition() - startingTicks)) < targetMM) {
             Orientation angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
 
             // If it is too far right, adjust
@@ -127,6 +127,31 @@ public class RobotHardware {
             // If it is too far  left, adjust
             else if (angles.firstAngle > targetHeading) {
                 setPower(power + 0.05, power - 0.05, power + 0.05, power - 0.05);
+            }
+            // Maintain otherwise
+            else {
+                setPower(power, power, power, power);
+            }
+        }
+        stopMotors();
+    }
+
+    // Method for driving forward/straight while maintaining a constant heading
+    public void reverse(double targetMM, double targetHeading, double power) {
+        // Setting the initial starting position of the robot
+        double startingTicks = leftEncoder.getCurrentPosition();
+
+        // Repeat until target/goal is met
+        while (Math.abs(ticksToMM(leftEncoder.getCurrentPosition() - startingTicks)) < targetMM) {
+            Orientation angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+
+            // If it is too far right, adjust
+            if (angles.firstAngle < targetHeading) {
+                setPower(power + 0.05, power - 0.0, power + 0.05,power - 0.05);
+            }
+            // If it is too far  left, adjust
+            else if (angles.firstAngle > targetHeading) {
+                setPower(power - 0.05, power + 0.05, power - 0.05, power + 0.05);
             }
             // Maintain otherwise
             else {
